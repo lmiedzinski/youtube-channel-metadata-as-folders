@@ -10,6 +10,8 @@ const string videosDirectory = "Videos";
 const string shortsDirectory = "Shorts";
 const string applicationName = "YoutubeChannelMetadataAsFolders";
 
+using var httpClient = new HttpClient();
+
 var youtubeService = new YouTubeService(new BaseClientService.Initializer
 {
     ApiKey = youtubeApiKey,
@@ -36,15 +38,16 @@ while (nextPageToken != null)
     foreach (var playlistItem in playlistResponse.Items)
     {
         var videoTitle = playlistItem.Snippet.Title;
-        var folderName = ToSafeFolderName(videoTitle);
-        
+        var dateStamp = playlistItem.Snippet.PublishedAt?.ToString("yyyyMMdd") ?? "";
+        var folderName = dateStamp + "_" + ToSafeFolderName(videoTitle);
+
         var videoOrShortsPath = Path.Combine(
             baseDirectory,
             videoTitle.Contains("#shorts") ? shortsDirectory : videosDirectory);
         var folderPath = Path.Combine(videoOrShortsPath, folderName);
         Directory.CreateDirectory(folderPath);
 
-        var readmeContent = CreateReadmeContent(playlistItem);
+        var readmeContent = await CreateReadmeContent(playlistItem, httpClient);
         File.WriteAllText(Path.Combine(folderPath, "README.md"), readmeContent);
     }
 
@@ -58,7 +61,16 @@ static string ToSafeFolderName(string name)
     return safeName;
 }
 
-static string CreateReadmeContent(Google.Apis.YouTube.v3.Data.PlaylistItem playlistItem)
+static async Task<string> CreateReadmeContent(
+    Google.Apis.YouTube.v3.Data.PlaylistItem playlistItem,
+    HttpClient httpClient)
 {
-    return $"# {playlistItem.Snippet.Title}\n\n[Link to video](https://www.youtube.com/watch?v={playlistItem.Snippet.ResourceId.VideoId})\n\n{playlistItem.Snippet.Description}";
+    var thumbnailUrl = playlistItem.Snippet.Thumbnails.Standard.Url;
+    
+    var httpResponse = await httpClient.GetAsync(thumbnailUrl);
+    var imageBytes = await httpResponse.Content.ReadAsByteArrayAsync();
+    var base64Image = Convert.ToBase64String(imageBytes);
+
+    return
+        $"# {playlistItem.Snippet.Title}\n\nPublished on: {playlistItem.Snippet.PublishedAt}\n\n![Thumbnail](data:image/png;base64,{base64Image})\n\n[Link to video](https://www.youtube.com/watch?v={playlistItem.Snippet.ResourceId.VideoId})\n\n{playlistItem.Snippet.Description}";
 }
