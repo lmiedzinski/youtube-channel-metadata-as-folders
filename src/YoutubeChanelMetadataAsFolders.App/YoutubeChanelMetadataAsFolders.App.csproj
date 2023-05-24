@@ -7,4 +7,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.3043" />
+    </ItemGroup>
+
 </Project>
