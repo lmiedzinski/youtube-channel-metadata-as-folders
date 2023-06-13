@@ -4,6 +4,8 @@ This application generates folder structures for a given YouTube channel. Each v
 
 The folders are created in a specified base directory, within which two subdirectories are created: one for standard videos, and one for YouTube Shorts. Each video's folder contains a `README.md` file, which includes the video title, a link to the video, the video's description, and the video's thumbnail image.
 
+Additionally, the application provides an option to only process a specified number of the most recent videos on the channel.
+
 ## Project Structure
 
 The project is composed of the following files:
@@ -15,6 +17,8 @@ The project is composed of the following files:
 ## Usage
 
 Before running the application, replace `YOUR_YOUTUBE_API_KEY`, `YOUR_YOUTUBE_CHANNEL_ID`, and `BASE_FOLDER` in `Program.cs` with your actual YouTube API key, channel ID, and desired directory path, respectively.
+
+To process a specified number of the most recent videos, set the `onlyLastMessages` variable at the beginning of `Program.cs` to the desired number. If this variable is set to `null`, the program will process all videos.
 
 To run the application, simply execute the `Program.cs` file.
 
