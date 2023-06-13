@@ -10,6 +10,8 @@ const string videosDirectory = "Videos";
 const string shortsDirectory = "Shorts";
 const string applicationName = "YoutubeChannelMetadataAsFolders";
 
+int? onlyLastMessages = null;
+
 using var httpClient = new HttpClient();
 
 var youtubeService = new YouTubeService(new BaseClientService.Initializer
@@ -39,6 +41,12 @@ while (nextPageToken != null)
     foreach (var playlistItem in playlistResponse.Items)
     {
         videoCounter++;
+        
+        if (videoCounter > onlyLastMessages)
+        {
+            Console.WriteLine($"Processed the specified number of {onlyLastMessages} videos. Exiting...");
+            return;
+        }
 
         var videoTitle = playlistItem.Snippet.Title;
         var dateStamp = playlistItem.Snippet.PublishedAt?.ToString("yyyyMMdd") ?? string.Empty;
